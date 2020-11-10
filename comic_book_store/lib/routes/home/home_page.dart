@@ -125,10 +125,14 @@ class _HomePageState extends State<HomePage> {
                         .collection('store')
                         .doc(uid)
                         .snapshots(),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<DocumentSnapshot> snapshot) {
+                    builder: (
+                      BuildContext context,
+                      AsyncSnapshot<DocumentSnapshot> snapshot,
+                    ) {
                       return AnimatedSwitcher(
-                        duration: Duration(milliseconds: 400),
+                        duration: Duration(
+                          milliseconds: 400,
+                        ),
                         child: switcherChild(snapshot),
                       );
                     },
@@ -173,117 +177,177 @@ class BookTitlesListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     BorderRadius mainRadius = BorderRadius.circular(15);
-    return ListView.builder(
-      shrinkWrap: false,
-      itemCount: snapshot.data.data()["book_titles"].length,
-      itemBuilder: (context, int index) {
-        return Container(
-          margin: EdgeInsets.all(10.0),
-          decoration: BoxDecoration(
-            borderRadius: mainRadius,
-          ),
-          child: Material(
-            elevation: 4.0,
-            borderRadius: mainRadius,
-            child: Container(
-              decoration: BoxDecoration(
-                color: ComicBookStoreTheming().accent,
-                borderRadius: mainRadius,
+    if (snapshot.data.data().isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.menu_book,
+              color: ComicBookStoreTheming().secondary,
+              size: 120,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Text(
+              "Add a book to get started",
+              style: TextStyle(
+                fontSize: 22,
               ),
-              child: Material(
-                color: Colors.transparent,
-                borderRadius: mainRadius,
-                child: InkWell(
-                  onTap: () {
-                    showModal(
-                      context: context,
-                      builder: (_) {
-                        return AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: mainRadius,
-                          ),
-                          title: Text("Edit"),
-                          content: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              MaterialButton(
-                                onPressed: () async {
-                                  await FirebaseFirestore.instance
-                                      .collection('store')
-                                      .doc(snapshot.data.id)
-                                      .delete();
-                                },
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.delete,
-                                    ),
-                                    SizedBox(
-                                      width: 5.0,
-                                    ),
-                                    Text(
-                                      "Delete",
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              MaterialButton(
-                                onPressed: () {},
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.edit,
-                                    ),
-                                    SizedBox(
-                                      width: 5.0,
-                                    ),
-                                    Text(
-                                      "Edit title",
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  splashColor: Colors.white,
+            ),
+          ],
+        ),
+      );
+    } else {
+      return ListView.builder(
+        shrinkWrap: false,
+        itemCount: snapshot.data.data()["book_titles"].length,
+        itemBuilder: (context, int index) {
+          return Container(
+            margin: EdgeInsets.all(10.0),
+            decoration: BoxDecoration(
+              borderRadius: mainRadius,
+            ),
+            child: Material(
+              elevation: 4.0,
+              borderRadius: mainRadius,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: ComicBookStoreTheming().accent,
                   borderRadius: mainRadius,
-                  child: Container(
-                    padding: EdgeInsets.all(20.0),
-                    decoration: BoxDecoration(
-                      borderRadius: mainRadius,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.book,
-                          size: 30,
-                        ),
-                        SizedBox(
-                          width: 30,
-                        ),
-                        Text(
-                          "${snapshot.data.data()["book_titles"][index]}",
-                          style: TextStyle(
-                            fontSize: 22,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: mainRadius,
+                  child: InkWell(
+                    onTap: () {
+                      showModal(
+                        context: context,
+                        builder: (_) {
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: mainRadius,
+                            ),
+                            title: Text("Edit"),
+                            content: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                MaterialButton(
+                                  onPressed: () async {
+                                    DocumentSnapshot _titlesDoc =
+                                        await FirebaseFirestore.instance
+                                            .collection('store')
+                                            .doc(snapshot.data.id)
+                                            .get();
+                                    print(_titlesDoc
+                                        .data()["book_titles"]
+                                        .length);
+                                    if (_titlesDoc
+                                            .data()["book_titles"]
+                                            .length ==
+                                        1) {
+                                      Navigator.of(
+                                        context,
+                                        rootNavigator: true,
+                                      ).pop('dialog');
+                                      await FirebaseFirestore.instance
+                                          .collection('store')
+                                          .doc(snapshot.data.id)
+                                          .update({
+                                        "book_titles": FieldValue.delete()
+                                      });
+                                    } else {
+                                      await FirebaseFirestore.instance
+                                          .collection('store')
+                                          .doc(snapshot.data.id)
+                                          .update({
+                                        "book_titles": FieldValue.arrayRemove(
+                                          [
+                                            _titlesDoc.data()["book_titles"]
+                                                [index],
+                                          ],
+                                        )
+                                      });
+                                      Navigator.of(
+                                        context,
+                                        rootNavigator: true,
+                                      ).pop('dialog');
+                                    }
+                                  },
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete,
+                                      ),
+                                      SizedBox(
+                                        width: 5.0,
+                                      ),
+                                      Text(
+                                        "Delete",
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                MaterialButton(
+                                  onPressed: () {},
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.edit,
+                                      ),
+                                      SizedBox(
+                                        width: 5.0,
+                                      ),
+                                      Text(
+                                        "Edit title",
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    splashColor: Colors.white,
+                    borderRadius: mainRadius,
+                    child: Container(
+                      padding: EdgeInsets.all(20.0),
+                      decoration: BoxDecoration(
+                        borderRadius: mainRadius,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.book,
+                            size: 30,
                           ),
-                        ),
-                      ],
+                          SizedBox(
+                            width: 30,
+                          ),
+                          Text(
+                            "${snapshot.data.data()["book_titles"][index]}",
+                            style: TextStyle(
+                              fontSize: 22,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    }
   }
 }

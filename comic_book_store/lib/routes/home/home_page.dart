@@ -14,6 +14,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  TextEditingController controller = new TextEditingController(text: "");
+
   Widget switcherChild(AsyncSnapshot<DocumentSnapshot> snapshot) {
     if (snapshot.connectionState == ConnectionState.active) {
       return AnimatedSwitcher(
@@ -89,7 +91,94 @@ class _HomePageState extends State<HomePage> {
               elevation: 10,
             ),
             floatingActionButton: RaisedButton(
-              onPressed: () {},
+              onPressed: () {
+                showModal(
+                  context: context,
+                  builder: (_) => StatefulBuilder(
+                    builder: (context, setState) {
+                      return AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        title: Text("Add a book"),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            TextFormField(
+                              autocorrect: false,
+                              onChanged: (text) {
+                                print(controller.text);
+                                setState(() {});
+                              },
+                              controller: controller,
+                              decoration: InputDecoration(
+                                labelText: "Name of your book",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    10,
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        actions: [
+                          PreferenceBuilder(
+                            preference: localStorageProvider.uid,
+                            builder: (context, uid) {
+                              return FlatButton(
+                                onPressed: controller.text == ""
+                                    ? null
+                                    : () async {
+                                        await FirebaseFirestore.instance
+                                            .collection('store')
+                                            .doc(uid)
+                                            .update({
+                                          "book_titles": FieldValue.arrayUnion([
+                                            controller.text,
+                                          ])
+                                        });
+                                        controller.clear();
+                                        Navigator.of(
+                                          context,
+                                          rootNavigator: true,
+                                        ).pop('dialog');
+                                      },
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    10,
+                                  ),
+                                ),
+                                splashColor: Colors.black12,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.library_add,
+                                      color: Colors.black,
+                                    ),
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    Text(
+                                      "Add book",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          )
+                        ],
+                      );
+                    },
+                  ),
+                );
+              },
               elevation: 3.0,
               padding: EdgeInsets.all(
                 10.0,
@@ -129,12 +218,37 @@ class _HomePageState extends State<HomePage> {
                       BuildContext context,
                       AsyncSnapshot<DocumentSnapshot> snapshot,
                     ) {
-                      return AnimatedSwitcher(
-                        duration: Duration(
-                          milliseconds: 400,
-                        ),
-                        child: switcherChild(snapshot),
-                      );
+                      if (snapshot.hasData) {
+                        return AnimatedSwitcher(
+                          duration: Duration(
+                            milliseconds: 400,
+                          ),
+                          child: switcherChild(snapshot),
+                        );
+                      } else {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.menu_book,
+                                color: ComicBookStoreTheming().secondary,
+                                size: 120,
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Text(
+                                "Add a book to get started",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
                     },
                   );
                 }
@@ -265,12 +379,10 @@ class BookTitlesListView extends StatelessWidget {
                                           .collection('store')
                                           .doc(snapshot.data.id)
                                           .update({
-                                        "book_titles": FieldValue.arrayRemove(
-                                          [
-                                            _titlesDoc.data()["book_titles"]
-                                                [index],
-                                          ],
-                                        )
+                                        "book_titles": FieldValue.arrayRemove([
+                                          _titlesDoc.data()["book_titles"]
+                                              [index],
+                                        ])
                                       });
                                       Navigator.of(
                                         context,
@@ -288,22 +400,6 @@ class BookTitlesListView extends StatelessWidget {
                                       ),
                                       Text(
                                         "Delete",
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                MaterialButton(
-                                  onPressed: () {},
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.edit,
-                                      ),
-                                      SizedBox(
-                                        width: 5.0,
-                                      ),
-                                      Text(
-                                        "Edit title",
                                       ),
                                     ],
                                   ),

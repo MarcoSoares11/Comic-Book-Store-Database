@@ -5,7 +5,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 class UserAuthService {
-
+  /// Signs user in with Google.
+  ///
+  ///
   Future<void> signInWithGoogle(GoogleSignIn googleSignIn) async {
     final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
     final GoogleSignInAuthentication googleSignInAuthentication =

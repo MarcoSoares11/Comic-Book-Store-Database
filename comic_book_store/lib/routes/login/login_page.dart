@@ -9,14 +9,17 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final iconAssetName = "assets/book_store_login_icon.svg";
+  // Easily find path to the logo icon.
+  final String iconAssetName = "assets/book_store_login_icon.svg";
 
   @override
   Widget build(BuildContext context) {
+    // Initialize the Authentication provider
     final firebaseAuthService = Provider.of<FirebaseAuthService>(
       context,
       listen: false,
     );
+
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,

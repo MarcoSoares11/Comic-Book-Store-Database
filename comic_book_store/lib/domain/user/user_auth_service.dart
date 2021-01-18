@@ -37,6 +37,7 @@ class UserAuthService {
     );
   }
 
+  /// Clears the user's [SharedPreferences]
   Future<void> signOut() async {
     StreamingSharedPreferences streamingSharedPreferences =
         await StreamingSharedPreferences.instance;

@@ -13,6 +13,11 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   final iconAssetName = "assets/book_store_login_icon.svg";
 
+  /// Redirects user to the [AuthWidget] after Timer.
+  ///
+  /// Awaits the [didChangeDependencies] method to fire, which runs after
+  /// [initState], and uses a timer that then after 4 seconds redirects
+  /// the user to the [AuthWidget] that handles authentication.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();

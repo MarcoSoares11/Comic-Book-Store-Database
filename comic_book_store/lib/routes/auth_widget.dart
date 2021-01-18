@@ -14,29 +14,32 @@ class AuthWidget extends StatefulWidget {
 class _AuthWidgetState extends State<AuthWidget> {
   @override
   Widget build(BuildContext context) {
+    // Initialize the authentication provider
     final firebaseAuthService = Provider.of<FirebaseAuthService>(
       context,
     );
+
     return StreamBuilder<String>(
       stream: firebaseAuthService.onAuthStateChanged,
       builder: (context, snapshot) {
-        if(snapshot.hasData) {
+        if (snapshot.hasData) {
           print(snapshot.connectionState);
-          if(snapshot.connectionState == ConnectionState.active) {
+          if (snapshot.connectionState == ConnectionState.active) {
             final user = snapshot.data;
             print(user);
-            if(user == null) {
+
+            if (user == null) {
+              // User hasn't logged in yet
               return LoginPage();
             } else {
+              // User has logged in
               return HomePage();
             }
-          } else if(snapshot.connectionState == ConnectionState.waiting) {
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
             return Scaffold(
               body: Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Colors.white
-                  ),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
             );

@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
     if (snapshot.connectionState == ConnectionState.active) {
       return AnimatedSwitcher(
         duration: Duration(milliseconds: 500),
-        child: snapshot.data.data() == null
+        child: snapshot.data.data() == null || snapshot.data.data().length == 0
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -231,7 +231,8 @@ class _HomePageState extends State<HomePage> {
                       BuildContext context,
                       AsyncSnapshot<DocumentSnapshot> snapshot,
                     ) {
-                      if (snapshot.hasData) {
+                      if (snapshot.hasData &&
+                          snapshot.data.data()["book_titles"] != []) {
                         return AnimatedSwitcher(
                           duration: Duration(
                             milliseconds: 400,
